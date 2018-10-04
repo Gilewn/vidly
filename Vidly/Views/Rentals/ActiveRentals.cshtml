@@ -1,0 +1,121 @@
+﻿@model IEnumerable<Vidly.Models.Rental>
+
+
+@{
+    ViewBag.Title = "Active Rentals";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h2>Active Rentals</h2>
+
+<p>
+    @Html.ActionLink("New Rental", "New", "Rentals", null, new { @class = "btn btn-primary" })
+</p>
+
+<table id="rentals" class="table table-bordered table-hover">
+    <thead>
+        <tr>
+            <th>Customer</th>
+            <th>Movie</th>
+            <th>Date Rented</th>
+            <th>Return</th>
+        </tr>
+    </thead>
+    <tbody>
+        @*@foreach (var rental in Model)
+        {
+            <tr style="color:black">
+                <td>@rental.Customer.Name</td>
+                <td>@rental.Movie.Name</td>
+                <td>@rental.DateRented.ToShortDateString()</td>
+            </tr>
+        }*@
+    </tbody>
+</table>
+
+@section scripts
+{
+    <script>
+        $(document).ready(function () {
+
+            var table = $("#rentals").DataTable({
+                ajax: {
+                    url: "/api/newRentals",
+                    dataSrc: ""
+                },
+                columns: [
+                    {
+                        data: "customer.name"
+                    },
+                    {
+                        data: "movie.name"
+                    },
+                    {
+                        data: "dateRented",
+                        render: function (d) {
+                            return moment(d).format("dddd D MMMM YYYY");
+                        }
+
+                        //render: function (data) {
+                        //    var formattedDate = new Date(data);
+                        //    var d = formattedDate.getDate();
+                        //    var m = formattedDate.getMonth();
+                        //    m += 1;  // JavaScript months are 0-11
+                        //    var y = formattedDate.getFullYear();
+                        //    return (d + "/" + m + "/" + y);
+                        //}
+
+                        //var date = new Date(data);
+                        //var month = date.getMonth() + 1;
+                        //return (month.length > 1 ? month : "0" + month) + "/" + date.getDate() + "/" + date.getFullYear();
+                        
+                        //render: function (data) {
+                        //    var date = new Date(data)"\/Date(1297246301973)\/";
+                        //    var nowDate = new Date(parseInt(date.substr(6)));
+                        //    var result = "";
+                        //    result += nowDate.format("dddd, mmmm d, yyyy");
+                        //    $("#lblDate").html(result);
+                        //}
+
+                        //$("table.th.datesRented").each(function() {
+                        //    var dateFormat = $(this).text()
+                        //    var dateFormat = $.datepicker.formatDate('MM dd, yy', new Date(dateFormat));
+                        //    $(this).html(dateFormat);
+                        //});
+
+                        //var formattedDate = new Date(data);
+                        //var d = formattedDate.getDate();
+                        //var m = formattedDate.getMonth();
+                        //m += 1;  // JavaScript months are 0-11
+                        //var y = formattedDate.getFullYear();
+
+                        //$("#dateRented").val(d + "." + m + "." + y);
+                    },
+                    {
+                        data: "id",
+                        render: function (data) {
+                            return "<button class = 'btn-link js-delete' data-rental-id = " + data + ">Return</button>";
+                        }
+                    }
+                ]
+            });
+
+            $("#rentals").on("click", ".js-delete", function () {
+
+                var button = $(this);
+
+                bootbox.confirm("The movie has returned and the rental record is deleted.", function (result) {
+                    if (result) {
+                        $.ajax({
+                            url: "/api/newRentals/" + button.attr("data-rental-id"),
+                            method: "DELETE",
+                            success: function () {
+                                table.row(button.parents("tr")).remove().draw();
+                            }
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}
